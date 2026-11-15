@@ -1,0 +1,306 @@
+/* Archivo carries a width axis, which the section labels use to stretch out.
+   Plex Mono is reserved for numbers: in a tracking app the counts are the
+   content, and tabular figures keep them aligned down a column. */
+@import url('https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,300..800&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+
+:root {
+  /* Grounds, from the page floor up to a raised card. */
+  --ws-void: #08080a;
+  --ws-panel: #0f0f13;
+  --ws-raise: #16161b;
+  --ws-card: #1b1b21;
+  --ws-card-hi: #24242c;
+
+  --ws-line: rgba(255, 255, 255, 0.06);
+  --ws-line-strong: rgba(255, 255, 255, 0.14);
+
+  /* One accent, one signal colour. The red sits a touch cooler than the
+     streaming-service default so it reads as ours. */
+  --ws-red: #e11d2e;
+  --ws-red-hot: #ff3247;
+  --ws-amber: #f2b134;
+  --ws-green: #3ecf8e;
+
+  --ws-text: #f4f4f6;
+  --ws-dim: #90909c;
+  --ws-faint: #5a5a66;
+
+  --ws-sidebar: 236px;
+  --ws-topbar: 68px;
+  --ws-gutter: 32px;
+  --ws-radius: 12px;
+  --ws-radius-sm: 8px;
+
+  --ws-shadow: 0 18px 44px rgba(0, 0, 0, 0.55);
+  --ws-ease: cubic-bezier(0.22, 0.61, 0.36, 1);
+
+  font-family: Archivo, 'Segoe UI', system-ui, sans-serif;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+  background: var(--ws-void);
+  color: var(--ws-text);
+  font-size: 15px;
+  line-height: 1.55;
+}
+
+h1, h2, h3, h4 {
+  margin: 0;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+  color: var(--ws-text);
+}
+
+h1 { font-size: clamp(1.7rem, 3vw, 2.3rem); }
+h2 { font-size: 1.22rem; }
+h3 { font-size: 1rem; }
+
+p { margin: 0; }
+
+a { color: inherit; text-decoration: none; }
+
+img { max-width: 100%; display: block; }
+
+/* --- numerals -------------------------------------------------------------
+   Anything countable gets the mono face and tabular figures so episode
+   counters do not jitter as they tick up. */
+.num {
+  font-family: 'IBM Plex Mono', ui-monospace, monospace;
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: 'tnum' 1;
+}
+
+/* --- section labels -------------------------------------------------------
+   The width axis does the work here rather than extra letter-spacing alone. */
+.eyebrow {
+  display: block;
+  font-size: 0.68rem;
+  font-weight: 600;
+  font-stretch: 118%;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--ws-faint);
+}
+
+/* --- controls ------------------------------------------------------------- */
+
+button, input, select, textarea { font: inherit; color: inherit; }
+
+button { cursor: pointer; }
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.62rem 1.05rem;
+  border: 1px solid transparent;
+  border-radius: var(--ws-radius-sm);
+  background: var(--ws-red);
+  color: #fff;
+  font-size: 0.86rem;
+  font-weight: 600;
+  white-space: nowrap;
+  transition: background 0.18s var(--ws-ease), border-color 0.18s var(--ws-ease),
+              color 0.18s var(--ws-ease), opacity 0.18s var(--ws-ease);
+}
+
+.btn:hover { background: var(--ws-red-hot); }
+
+.btn:disabled { opacity: 0.45; cursor: not-allowed; }
+
+.btn-ghost {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: var(--ws-line-strong);
+  color: var(--ws-text);
+}
+
+.btn-ghost:hover { background: rgba(255, 255, 255, 0.12); }
+
+.btn-quiet {
+  background: transparent;
+  border-color: var(--ws-line-strong);
+  color: var(--ws-dim);
+}
+
+.btn-quiet:hover { background: rgba(255, 255, 255, 0.06); color: var(--ws-text); }
+
+.btn-danger { background: transparent; border-color: rgba(225, 29, 46, 0.45); color: #ff6070; }
+
+.btn-danger:hover { background: rgba(225, 29, 46, 0.14); }
+
+.btn-sm { padding: 0.42rem 0.7rem; font-size: 0.78rem; }
+
+input, select, textarea {
+  width: 100%;
+  padding: 0.7rem 0.85rem;
+  background: var(--ws-raise);
+  border: 1px solid var(--ws-line);
+  border-radius: var(--ws-radius-sm);
+  transition: border-color 0.18s var(--ws-ease), background 0.18s var(--ws-ease);
+}
+
+input::placeholder, textarea::placeholder { color: var(--ws-faint); }
+
+input:focus, select:focus, textarea:focus {
+  outline: none;
+  border-color: var(--ws-line-strong);
+  background: var(--ws-card);
+}
+
+textarea { min-height: 130px; resize: vertical; line-height: 1.6; }
+
+select { cursor: pointer; }
+
+option { background: var(--ws-raise); }
+
+:focus-visible {
+  outline: 2px solid var(--ws-red-hot);
+  outline-offset: 2px;
+}
+
+/* --- surfaces ------------------------------------------------------------- */
+
+.panel {
+  background: var(--ws-panel);
+  border: 1px solid var(--ws-line);
+  border-radius: var(--ws-radius);
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.28rem 0.6rem;
+  border: 1px solid var(--ws-line-strong);
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 500;
+  color: var(--ws-dim);
+}
+
+/* --- page scaffolding ----------------------------------------------------- */
+
+.page {
+  padding: 28px var(--ws-gutter) 72px;
+  max-width: 1680px;
+}
+
+.page-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.6rem;
+}
+
+.page-head h1 { margin-top: 0.35rem; }
+
+.section { margin-top: 2.6rem; }
+
+.section-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 0.9rem;
+}
+
+.section-head h2 { font-size: 1.05rem; letter-spacing: 0.01em; }
+
+/* Poster grids share one column rhythm across every page. */
+.poster-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(158px, 1fr));
+  gap: 1.15rem 1rem;
+}
+
+.empty {
+  padding: 3rem 1.5rem;
+  text-align: center;
+  color: var(--ws-dim);
+  border: 1px dashed var(--ws-line-strong);
+  border-radius: var(--ws-radius);
+}
+
+.empty strong { display: block; margin-bottom: 0.35rem; color: var(--ws-text); }
+
+.notice {
+  padding: 0.7rem 0.9rem;
+  border-radius: var(--ws-radius-sm);
+  font-size: 0.85rem;
+  border: 1px solid;
+}
+
+.notice-error { border-color: rgba(225, 29, 46, 0.4); background: rgba(225, 29, 46, 0.1); color: #ff8b96; }
+
+.notice-ok { border-color: rgba(62, 207, 142, 0.35); background: rgba(62, 207, 142, 0.1); color: var(--ws-green); }
+
+/* --- skeletons ------------------------------------------------------------
+   Posters load over the network, so lists reserve their space instead of
+   collapsing and reflowing when the images arrive. */
+.skeleton {
+  background: linear-gradient(
+    100deg,
+    var(--ws-raise) 30%,
+    var(--ws-card-hi) 50%,
+    var(--ws-raise) 70%
+  );
+  background-size: 220% 100%;
+  animation: ws-shimmer 1.4s linear infinite;
+  border-radius: var(--ws-radius-sm);
+}
+
+@keyframes ws-shimmer {
+  from { background-position: 140% 0; }
+  to { background-position: -40% 0; }
+}
+
+/* --- scrollbars ----------------------------------------------------------- */
+
+* { scrollbar-width: thin; scrollbar-color: #2c2c34 transparent; }
+
+*::-webkit-scrollbar { width: 10px; height: 10px; }
+
+*::-webkit-scrollbar-track { background: transparent; }
+
+*::-webkit-scrollbar-thumb {
+  background: #2c2c34;
+  border: 3px solid var(--ws-void);
+  border-radius: 999px;
+}
+
+*::-webkit-scrollbar-thumb:hover { background: #3c3c46; }
+
+@media (max-width: 900px) {
+  :root { --ws-gutter: 20px; }
+}
+
+@media (max-width: 560px) {
+  :root { --ws-gutter: 14px; }
+
+  .poster-grid { grid-template-columns: repeat(auto-fill, minmax(126px, 1fr)); gap: 0.9rem 0.7rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
