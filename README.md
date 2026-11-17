@@ -113,10 +113,8 @@ WatchSphere/
 │   ├── .env.example                  # Environment template for API base URL
 │   └── vite.config.js                # Vite build configuration
 │
-└── docs/                             # Engineering and audit reports
+└── docs/                             # Architecture and verification documents
     ├── ARCHITECTURE.md               # In-depth architectural documentation
-    ├── AUDIT_REPORT.md               # Full codebase security and quality audit log
-    ├── FINAL_RELEASE_REPORT.md       # Pre-publication checklist and verification log
     └── TEST_REPORT.md                # Build and runtime test verification matrix
 ```
 
@@ -290,7 +288,7 @@ The following were recorded during the pre-publication review in September to No
 - **Frontend**: The frontend builds without errors, but it has no automated tests, and no end-to-end browser tests (Playwright/Cypress) exist.
 - **Frontend dependencies**: `npm audit` is not clean (checked on 17 November 2026). The lockfile published before the dependency update resolves older versions of Axios (1.17.0) and Vite (8.0.16), and of the transitive packages follow-redirects, nanoid, PostCSS, source-map-js and `@vue/server-renderer`, all with known advisories. The updated lockfile (Axios 1.21.1, Vite 8.3.8, Vue 3.5.45) resolves those, but one high-severity advisory in `picomatch` ([GHSA-fc5q-39xc-vjpf](https://github.com/advisories/GHSA-fc5q-39xc-vjpf)) remains because no patched release exists yet. picomatch is used only by the build tooling and is not part of the production bundle.
 
-Detailed logs and historical findings are documented in [`docs/AUDIT_REPORT.md`](docs/AUDIT_REPORT.md) and [`docs/TEST_REPORT.md`](docs/TEST_REPORT.md).
+Detailed results and the pre-publication security review are documented in [`docs/TEST_REPORT.md`](docs/TEST_REPORT.md).
 
 ---
 
@@ -301,3 +299,4 @@ The following design decisions and limitations exist in the current development 
 2. **Refresh Token Flow**: Authentication relies on 24-hour stateless JWT access tokens without refresh token rotation.
 3. **Test Coverage**: Automated tests cover authentication, authorization, validation, rate limiting, and library rules (section 9). Providers, synchronization, MySQL-specific behaviour, and the frontend are not covered.
 4. **Third-Party Rate Limits**: Ingestion and synchronization are bounded by TMDB and TVmaze public API rate limits.
+5. **Admin Endpoints and CORS**: The admin user list is not paginated, and CORS allows any header and method for the configured origins (`Cors:AllowedOrigins`).

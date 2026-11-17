@@ -111,3 +111,23 @@ The `global.json` was updated to add `"rollForward": "latestFeature"` so the pro
 **Status: advisory 
 [GHSA-473q-m89c-ghf8](https://github.com/advisories/GHSA-473q-m89c-ghf8)
  resolved.** Dependency resolution (build verification) and runtime behaviour (connection, migration check, insert, query and update paths) were verified separately and both passed.
+
+---
+
+## Pre-publication Security Review (summary)
+
+Twelve findings were recorded in a codebase review before the first public commit (November 2026). This summary replaces the earlier `AUDIT_REPORT.md` and `FINAL_RELEASE_REPORT.md`.
+
+| ID | Finding | Outcome |
+|---|---|---|
+| S-01, S-02 | A real database password and a TMDB access token were present in `appsettings.json` in the local working tree | Removed before the first commit (placeholder and empty value). No committed configuration file has ever contained a real credential (checked across all commits on 17 November 2026). Rotating both values was recommended as a precaution |
+| S-03 | Unauthenticated development password-reset endpoint | Endpoint deleted |
+| S-04 | Development credentials in `appsettings.Development.json` | File excluded by `.gitignore`; never committed |
+| S-05 | JWT lifetime of 168 hours | Reduced to 24 hours |
+| S-06 | No root `.gitignore` | Created |
+| S-07 | `AvatarUrl` accepted any string | `[Url]` validation added |
+| S-08 | Admin review listing not paginated | Paginated (50 per page, maximum 100) |
+| S-09 | Admin user listing not paginated | Accepted risk (admin-only); listed under README limitations |
+| S-10 | CORS allows any header and method | Accepted; origins are restricted to `Cors:AllowedOrigins` |
+| S-11 | No password change for users | Known limitation (README) |
+| S-12 | Login and registration responses include the user's own email | Informational; standard behaviour |
