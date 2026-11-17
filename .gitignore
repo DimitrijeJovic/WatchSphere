@@ -1,6 +1,9 @@
 # .NET
 WatchSphere.API/bin/
 WatchSphere.API/obj/
+WatchSphere.Tests/bin/
+WatchSphere.Tests/obj/
+WatchSphere.Tests/TestResults/
 *.user
 *.suo
 *.ntvs*

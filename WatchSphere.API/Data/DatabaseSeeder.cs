@@ -25,7 +25,16 @@ namespace WatchSphere.API.Data
                 .GetRequiredService<ILoggerFactory>()
                 .CreateLogger(nameof(DatabaseSeeder));
 
-            await context.Database.MigrateAsync();
+            // The migrations contain MySQL-specific SQL. Other providers (the SQLite
+            // database used by WatchSphere.Tests) get the schema straight from the model.
+            if (context.Database.IsMySql())
+            {
+                await context.Database.MigrateAsync();
+            }
+            else
+            {
+                await context.Database.EnsureCreatedAsync();
+            }
 
             var existing = await context.Genres
                 .Select(g => g.Name)

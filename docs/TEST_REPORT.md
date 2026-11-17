@@ -47,9 +47,9 @@ All views, components and stores compiled and tree-shaken. Total JS output: ~146
 
 ## Automated Test Coverage
 
-No automated test suites exist for either project. This is documented in the audit report as a known gap.
+At the time of this report no automated tests existed. Since November 2026 the backend has an xUnit project, `WatchSphere.Tests` (see README section 9); the frontend still has none.
 
-**Verification method:** Manual build verification plus source inspection of all changed files. Each security fix was confirmed by reading the modified file after the edit.
+**Verification method (at the time of this report):** Manual build verification plus source inspection of all changed files. Each security fix was confirmed by reading the modified file after the edit.
 
 ---
 

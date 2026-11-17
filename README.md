@@ -4,7 +4,7 @@ A full-stack media catalogue and personal watch tracker for anime, movies, and t
 
 WatchSphere consolidates title discovery, personal progress tracking, scoring, reviews, and cross-catalogue metadata imports into a single unified application.
 
-<!-- Screenshot placeholder: Catalogue and Library Views (TODO) -->
+The concept and feature design are my own; the implementation was written with AI assistance. Development ran from June to September 2026 (see the dates of the EF Core migrations); the public repository was published as a single commit.
 
 ---
 
@@ -94,6 +94,11 @@ WatchSphere/
 │   ├── appsettings.json              # Public base configuration (placeholders only)
 │   └── Program.cs                    # Application bootstrapping and DI composition
 │
+├── WatchSphere.Tests/                # xUnit tests (API over HTTP and service logic, SQLite in memory)
+│   ├── Api/                          # Authentication, authorization, validation, rate limiting
+│   ├── Services/                     # Library progress and status rules
+│   └── Infrastructure/               # Test host (WebApplicationFactory) and test database
+│
 ├── WatchSphere.Frontend/             # Vue 3 Single Page Application
 │   ├── public/                       # Static public assets (favicon.svg)
 │   ├── src/
@@ -120,13 +125,19 @@ WatchSphere/
 - **Stateless Authentication**: JWT tokens carry validated user identity and role claims (`User`, `Admin`). Library endpoints derive the user ID exclusively from claims rather than untrusted client URL parameters.
 - **Resilient Ingestion**: String values from third-party APIs are sanitized and truncated at word boundaries before persistence to satisfy database column constraints.
 
+### Authentication Overview
+- `POST /api/Auth/register` and `POST /api/Auth/login` return a JWT signed with HMAC-SHA256. Passwords are stored as BCrypt hashes; login returns the same error for an unknown email and a wrong password.
+- The signing key comes from `WATCHSPHERE_JWT_KEY` (or `Jwt:Key`); the API refuses to start if it is missing or shorter than 32 bytes. Tokens are checked for issuer, audience, signature, and expiry with no clock skew.
+- Catalogue, genre, import, and user-management writes require the `Admin` role; library, episode progress, and reviews require a signed-in user. A review can be edited only by its author and deleted by its author or an administrator.
+- Register and login are limited to 10 requests per minute per client address.
+
 ---
 
 ## 5. Prerequisites
 
 Before running the application locally, ensure you have the following installed:
 - **.NET SDK**: .NET 10.0 SDK (version `10.0.200` or higher; configured via `global.json` with `latestFeature` roll-forward)
-- **Node.js**: Version 18.x or later with `npm`
+- **Node.js**: Version 20.19 or later, or 22.12 or later, with `npm` (required by Vite 8)
 - **Database Server**: MySQL 8.0 or compatible server running locally on port 3306
 - **TMDB API Credentials** *(Optional)*: Free TMDB account and API key / Read Access Token (required only for film imports; anime and TVmaze series work without credentials)
 
@@ -200,7 +211,7 @@ For production environments, separate migration privileges from daily applicatio
   ```
 
 ### Running Migrations
-The application automatically checks and executes pending migrations on startup via `DatabaseSeeder.SeedAsync()` if the configured database user holds DDL permissions. 
+On MySQL, the application applies pending migrations on startup via `DatabaseSeeder.SeedAsync()` if the configured database user holds DDL permissions. (The migrations contain MySQL-specific SQL; with any other provider, such as the SQLite database used by the tests, the schema is created directly from the model instead.)
 
 Alternatively, apply migrations manually using the .NET EF CLI from the `WatchSphere.API` directory:
 ```bash
@@ -241,11 +252,31 @@ npm run dev
 
 ## 9. Testing & Verified Results
 
-The repository has undergone structured pre-publication audit and runtime verification. Tested functionality is strictly delineated from unverified areas:
+### Automated Tests
+
+```bash
+dotnet test WatchSphere.Tests
+```
+
+21 xUnit tests. The API tests host the real application in memory with `WebApplicationFactory`, in a `Testing` environment (local development settings are not loaded, the background sync service is removed, and a throwaway JWT key is used). Data is stored in an in-memory SQLite database, so unique indexes and foreign keys are enforced. No MySQL server or external API is needed.
+
+| Area | What is checked |
+|---|---|
+| Authentication | Register returns a working token; passwords stored as BCrypt hashes; emails normalised; duplicate email returns 409; short password returns 400; identical 401 for unknown email and wrong password |
+| Authorization | 401 without a token, with a token signed by another key, and with an expired token; 403 for a regular user on an admin endpoint; review editing limited to the author, deletion to the author or an administrator |
+| Validation | An unknown library status is rejected with 400 |
+| Rate limiting | The eleventh login attempt within a minute returns 429 |
+| Library rules | Duplicate and unknown titles refused; first episode starts a planned title; last episode completes it; progress clamped to the episode count; "Planned" clears progress; a movie counts as one episode; another user's entry cannot be changed or removed |
+
+Not covered: the MySQL migrations themselves, the external catalogue providers, the background sync service, and the Vue frontend.
+
+### Earlier Manual Checks (Historical)
+
+The following were recorded during the pre-publication review in September to November 2026 and have not been repeated since; see `docs/TEST_REPORT.md`.
 
 ### Verified Build & Security Checks
 - **Backend Build**: Compiled with .NET 10 SDK (`0 Warning(s)`, `0 Error(s)`).
-- **Frontend Build**: Production asset build passed via `npm run build` with chunked output in ~460ms.
+- **Frontend Build**: Production asset build passes via `npm run build` (re-checked on 17 November 2026).
 - **Dependency Vulnerabilities**: Upgraded transitive `MySqlConnector` dependency to `2.6.1`, resolving moderate severity advisory [GHSA-473q-m89c-ghf8](https://github.com/advisories/GHSA-473q-m89c-ghf8). Confirmed `0 vulnerable packages` via `dotnet list package --vulnerable`.
 - **Repository Hygiene**: Confirmed zero tracked credentials or secret leaks; development backups, `.env`, and local settings files are verified excluded by `.gitignore`.
 
@@ -256,8 +287,8 @@ The repository has undergone structured pre-publication audit and runtime verifi
 - **TMDB Integration**: Verified `GET /api/Import/search` returning HTTP 200 with active search results across movies (10 results), TV series (10 results), and combined queries (33 results).
 
 ### Testing Boundaries & Unverified Items
-- **Automated Tests**: There is currently no dedicated automated test project (`xUnit`/`NUnit`). Integration tests were executed via direct API endpoint verification.
-- **Frontend E2E**: While components build without errors and local development flows function, end-to-end automated headless browser tests (Playwright/Cypress) have not been run.
+- **Frontend**: The frontend builds without errors, but it has no automated tests, and no end-to-end browser tests (Playwright/Cypress) exist.
+- **Frontend dependencies**: `npm audit` is not clean (checked on 17 November 2026). The lockfile published before the dependency update resolves older versions of Axios (1.17.0) and Vite (8.0.16), and of the transitive packages follow-redirects, nanoid, PostCSS, source-map-js and `@vue/server-renderer`, all with known advisories. The updated lockfile (Axios 1.21.1, Vite 8.3.8, Vue 3.5.45) resolves those, but one high-severity advisory in `picomatch` ([GHSA-fc5q-39xc-vjpf](https://github.com/advisories/GHSA-fc5q-39xc-vjpf)) remains because no patched release exists yet. picomatch is used only by the build tooling and is not part of the production bundle.
 
 Detailed logs and historical findings are documented in [`docs/AUDIT_REPORT.md`](docs/AUDIT_REPORT.md) and [`docs/TEST_REPORT.md`](docs/TEST_REPORT.md).
 
@@ -268,5 +299,5 @@ Detailed logs and historical findings are documented in [`docs/AUDIT_REPORT.md`]
 The following design decisions and limitations exist in the current development preview:
 1. **Self-Service Password Reset**: Users cannot reset or change passwords through self-service endpoints; password resets currently require administrative or direct database intervention.
 2. **Refresh Token Flow**: Authentication relies on 24-hour stateless JWT access tokens without refresh token rotation.
-3. **Automated Test Suite**: Formal unit and integration test coverage across services and controllers is planned for an upcoming release.
+3. **Test Coverage**: Automated tests cover authentication, authorization, validation, rate limiting, and library rules (section 9). Providers, synchronization, MySQL-specific behaviour, and the frontend are not covered.
 4. **Third-Party Rate Limits**: Ingestion and synchronization are bounded by TMDB and TVmaze public API rate limits.
